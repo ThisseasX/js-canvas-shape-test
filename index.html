@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <canvas id="cvs" width="600" height="600"></canvas>
+    <canvas id="cvs" width="900" height="900"></canvas>
     <script>
 
         /////////////////////////////////////////////////////////////////
@@ -34,8 +34,8 @@
 
         // Circle: Radius, X, Y
         const cr = 80;
-        const cx = 330;
-        const cy = 330;
+        const cx = 530;
+        const cy = 530;
 
         // Square: Size, X, Y
         const ss = 160;
@@ -87,7 +87,7 @@
         // Draw Background
         function drawBackground() {
             ctx.fillStyle = "#000";
-            ctx.fillRect(0, 0, 600, 600);
+            ctx.fillRect(0, 0, cvs.height, cvs.width);
         }
 
         // Draw Square and its center
