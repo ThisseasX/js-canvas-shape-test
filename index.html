@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Shape Test</title>
 </head>
 
 <body>
@@ -24,6 +24,7 @@
             sx = e.clientX - rect.left - ss / 2;
             sy = e.clientY - rect.top - ss / 2;
 
+            // Recalculate Square Center
             scx = sx + ss / 2;
             scy = sy + ss / 2;
         }
@@ -86,46 +87,58 @@
 
         // Draw Background
         function drawBackground() {
-            ctx.fillStyle = "#000";
-            ctx.fillRect(0, 0, cvs.height, cvs.width);
+            drawSquareFunc(0, 0, cvs.width, "black");
         }
 
         // Draw Square and its center
         function drawSquare() {
             // Square
-            ctx.fillStyle = "#fff"
-            ctx.fillRect(sx, sy, ss, ss);
+            drawSquareFunc(sx, sy, ss, "white");
 
             // Square Center
-            ctx.fillStyle = "#0f0";
-            ctx.beginPath();
-            ctx.arc(scx, scy, scr, 0, 2 * Math.PI);
-            ctx.fill();
+            drawCircleFunc(scx, scy, scr, "cyan");
         }
 
         // Draw Circle and its center
         function drawCircle() {
             // Circle
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(cx, cy, cr, 0, 2 * Math.PI);
-            ctx.fill();
+            drawCircleFunc(cx, cy, cr, "white");
 
             // Circle Center
-            ctx.fillStyle = "#0f0";
-            ctx.beginPath();
-            ctx.arc(ccx, ccy, ccr, 0, 2 * Math.PI);
-            ctx.fill();
+            drawCircleFunc(ccx, ccy, ccr, "cyan");
         }
 
         // Draw Distance Line
         function drawLine() {
-            ctx.strokeStyle = "#f00";
-            ctx.lineCap = "round";
-            ctx.lineWidth = lw;
+            drawLineFunc(ccx, ccy, scx, scy);
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // Utility Functions                                           //
+        /////////////////////////////////////////////////////////////////
+
+        function drawSquareFunc(x, y, size, color) {
+            size = size || 10;
+            ctx.fillStyle = color || "white";
+            ctx.fillRect(x, y, size, size);
+        }
+
+        function drawCircleFunc(x, y, r, color) {
+            r = r || 10;
+            ctx.fillStyle = color || "white";
             ctx.beginPath();
-            ctx.moveTo(ccx, ccy);
-            ctx.lineTo(scx, scy);
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function drawLineFunc(xStart, yStart, xEnd, yEnd, color, cap, width) {
+            ctx.strokeStyle = color || "red";
+            ctx.lineCap = cap || "round";
+            ctx.lineWidth = width || lw;
+
+            ctx.beginPath();
+            ctx.moveTo(xStart, yStart);
+            ctx.lineTo(xEnd, yEnd);
             ctx.stroke();
         }
 
@@ -133,8 +146,41 @@
         // Logic Functions                                             //
         /////////////////////////////////////////////////////////////////
 
+        function checkCollision() {
+            var dx = ccx - scx;
+            var dy = ccy - scy;
+
+            var width = cr + ss / 2;
+            var height = cr + ss / 2;
+
+            var crossWidth = width * dy;
+            var crossHeight = height * dx;
+
+            // Test method calls, to draw collision points
+            // drawSquareFunc(Math.abs(dx), Math.abs(dy), "magenta");
+            // drawSquareFunc(width, height, "yellow");
+            // drawSquareFunc(crossWidth, -crossHeight, "cyan");
+            // console.log("CrossWidth: " + crossWidth);
+            // console.log("CrossHeight: " + crossHeight);
+            // console.log("-CrossHeight: " + -crossHeight);
+
+            var collision = 'none';
+
+            if (Math.abs(dx) <= width && Math.abs(dy) <= height) {
+                if (crossWidth > crossHeight) {
+                    collision = crossWidth > -crossHeight ? 'bottom' : 'left';
+                } else {
+                    collision = crossWidth > -crossHeight ? 'right' : 'top';
+                }
+            }
+
+            return collision;
+        }
+
         // Draw Collision Rectangle
-        function drawCollision(side) {
+        function drawCollision() {
+            let side = checkCollision();
+
             ctx.fillStyle = "#00f"
             switch (side) {
                 case "left":
@@ -151,6 +197,7 @@
                     break;
             }
         }
+
     </script>
 </body>
 
