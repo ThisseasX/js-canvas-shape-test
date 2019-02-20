@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="cvs" width="600" height="600"></canvas>
+    <script>
+
+        /////////////////////////////////////////////////////////////////
+        // Initialization                                              //
+        /////////////////////////////////////////////////////////////////
+
+        const cvs = document.querySelector("#cvs");
+        const ctx = cvs.getContext("2d");
+
+        cvs.onmousemove = (e) => {
+            const rect = cvs.getBoundingClientRect();
+            sx = e.clientX - rect.left - ss / 2;
+            sy = e.clientY - rect.top - ss / 2;
+
+            scx = sx + ss / 2;
+            scy = sy + ss / 2;
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // Shapes                                                      //
+        /////////////////////////////////////////////////////////////////
+
+        // Circle: Radius, X, Y
+        const cr = 80;
+        const cx = 330;
+        const cy = 330;
+
+        // Square: Size, X, Y
+        const ss = 160;
+        let sx = 35;
+        let sy = 80;
+
+        /////////////////////////////////////////////////////////////////
+        // Centers                                                     //
+        /////////////////////////////////////////////////////////////////
+
+        // Circle Center: Radius, X, Y
+        const ccr = cr / 5;
+        const ccx = cx;
+        const ccy = cy;
+
+        // Square Center: Radius, X, Y
+        const scr = ss / 2 / 5;
+        let scx = sx + ss / 2;
+        let scy = sy + ss / 2;
+
+        /////////////////////////////////////////////////////////////////
+        // Other Variables                                             //
+        /////////////////////////////////////////////////////////////////
+
+        // Distance Line Width
+        const lw = ((ss / 2 + cr) / 2) / 2 / 5;
+
+        // Collision Size
+        const collSize = 10;
+
+        /////////////////////////////////////////////////////////////////
+        // Main Function                                               //
+        /////////////////////////////////////////////////////////////////
+
+        // Main
+        (function draw() {
+            drawBackground();
+            drawCircle();
+            drawSquare();
+            drawCollision("top");
+            drawLine();
+            requestAnimationFrame(draw);
+        })();
+
+        /////////////////////////////////////////////////////////////////
+        // Shape Functions                                             //
+        /////////////////////////////////////////////////////////////////
+
+        // Draw Background
+        function drawBackground() {
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, 600, 600);
+        }
+
+        // Draw Square and its center
+        function drawSquare() {
+            // Square
+            ctx.fillStyle = "#fff"
+            ctx.fillRect(sx, sy, ss, ss);
+
+            // Square Center
+            ctx.fillStyle = "#0f0";
+            ctx.beginPath();
+            ctx.arc(scx, scy, scr, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Draw Circle and its center
+        function drawCircle() {
+            // Circle
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(cx, cy, cr, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Circle Center
+            ctx.fillStyle = "#0f0";
+            ctx.beginPath();
+            ctx.arc(ccx, ccy, ccr, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Draw Distance Line
+        function drawLine() {
+            ctx.strokeStyle = "#f00";
+            ctx.lineCap = "round";
+            ctx.lineWidth = lw;
+            ctx.beginPath();
+            ctx.moveTo(ccx, ccy);
+            ctx.lineTo(scx, scy);
+            ctx.stroke();
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // Logic Functions                                             //
+        /////////////////////////////////////////////////////////////////
+
+        // Draw Collision Rectangle
+        function drawCollision(side) {
+            ctx.fillStyle = "#00f"
+            switch (side) {
+                case "left":
+                    ctx.fillRect(sx, sy, collSize, ss);
+                    break;
+                case "top":
+                    ctx.fillRect(sx, sy, ss, collSize);
+                    break;
+                case "right":
+                    ctx.fillRect(sx + ss - collSize, sy, collSize, ss);
+                    break;
+                case "bottom":
+                    ctx.fillRect(sx, sy + ss - collSize, ss, collSize);
+                    break;
+            }
+        }
+    </script>
+</body>
+
+</html>
