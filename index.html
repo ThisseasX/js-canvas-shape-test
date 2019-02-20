@@ -67,6 +67,9 @@
         // Collision Size
         const collSize = 10;
 
+        // Collision Text
+        let collText = "No Collision";
+
         /////////////////////////////////////////////////////////////////
         // Main Function                                               //
         /////////////////////////////////////////////////////////////////
@@ -74,9 +77,10 @@
         // Main
         (function draw() {
             drawBackground();
+            drawText();
             drawCircle();
             drawSquare();
-            drawCollision("top");
+            drawCollision();
             drawLine();
             requestAnimationFrame(draw);
         })();
@@ -113,16 +117,23 @@
             drawLineFunc(ccx, ccy, scx, scy);
         }
 
+        // Draw Collision Text
+        function drawText() {
+            drawTextFunc(cvs.width / 2, 100, collText, "50px Sans-Serif");
+        }
+
         /////////////////////////////////////////////////////////////////
         // Utility Functions                                           //
         /////////////////////////////////////////////////////////////////
 
+        // Draw any square
         function drawSquareFunc(x, y, size, color) {
             size = size || 10;
             ctx.fillStyle = color || "white";
             ctx.fillRect(x, y, size, size);
         }
 
+        // Draw any circle
         function drawCircleFunc(x, y, r, color) {
             r = r || 10;
             ctx.fillStyle = color || "white";
@@ -131,6 +142,7 @@
             ctx.fill();
         }
 
+        // Draw any line
         function drawLineFunc(xStart, yStart, xEnd, yEnd, color, cap, width) {
             ctx.strokeStyle = color || "red";
             ctx.lineCap = cap || "round";
@@ -140,6 +152,14 @@
             ctx.moveTo(xStart, yStart);
             ctx.lineTo(xEnd, yEnd);
             ctx.stroke();
+        }
+
+        // Draw any text
+        function drawTextFunc(x, y, text, font, align, color) {
+            ctx.font = font || "30px Arial";
+            ctx.textAlign = align || "center";
+            ctx.fillStyle = color || "red";
+            ctx.fillText(text, x, y);
         }
 
         /////////////////////////////////////////////////////////////////
@@ -180,6 +200,7 @@
         // Draw Collision Rectangle
         function drawCollision() {
             let side = checkCollision();
+            collText = "Collision: " + side;
 
             ctx.fillStyle = "#00f"
             switch (side) {
