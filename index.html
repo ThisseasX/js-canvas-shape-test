@@ -35,8 +35,8 @@
 
         // Circle: Radius, X, Y
         const cr = 80;
-        const cx = 530;
-        const cy = 530;
+        let cx = 530;
+        let cy = 530;
 
         // Square: Size, X, Y
         const ss = 160;
@@ -49,8 +49,8 @@
 
         // Circle Center: Radius, X, Y
         const ccr = cr / 5;
-        const ccx = cx;
-        const ccy = cy;
+        let ccx = cx;
+        let ccy = cy;
 
         // Square Center: Radius, X, Y
         const scr = ss / 2 / 5;
@@ -206,17 +206,23 @@
             switch (side) {
                 case "left":
                     ctx.fillRect(sx, sy, collSize, ss);
+                    cx = sx - cr
                     break;
                 case "top":
                     ctx.fillRect(sx, sy, ss, collSize);
+                    cy = sy - cr
                     break;
                 case "right":
                     ctx.fillRect(sx + ss - collSize, sy, collSize, ss);
+                    cx = sx + ss + cr;
                     break;
                 case "bottom":
                     ctx.fillRect(sx, sy + ss - collSize, ss, collSize);
+                    cy = sy + ss + cr;
                     break;
             }
+            ccx = cx;
+            ccy = cy;
         }
 
     </script>
