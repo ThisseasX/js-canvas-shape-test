@@ -19,15 +19,8 @@
         const cvs = document.querySelector("#cvs");
         const ctx = cvs.getContext("2d");
 
-        cvs.onmousemove = (e) => {
-            const rect = cvs.getBoundingClientRect();
-            sx = e.clientX - rect.left - ss / 2;
-            sy = e.clientY - rect.top - ss / 2;
-
-            // Recalculate Square Center
-            scx = sx + ss / 2;
-            scy = sy + ss / 2;
-        }
+        // Handler for mouse movement
+        cvs.onmousemove = mouseMove;
 
         /////////////////////////////////////////////////////////////////
         // Shapes                                                      //
@@ -70,6 +63,27 @@
         // Collision Text
         let collText = "No Collision";
 
+
+        // FIXME
+        Number.prototype.constrain = function (min, max) {
+            return Math.min(Math.max(this, min), max);
+        }
+
+        Number.prototype.constrainSquareX = function () {
+            return (this - ss / 2).constrain(0, cvs.width - ss);
+        }
+
+        Number.prototype.constrainSquareY = function () {
+            return (this - ss / 2).constrain(0, cvs.height - ss);
+        }
+
+        Number.prototype.constrainCircleX = function () {
+            return (this - cr).constrain(0, cvs.width - cr);
+        }
+
+        Number.prototype.constrainCircleY = function () {
+            return (this - cr).constrain(0, cvs.height - cr);
+        }
         /////////////////////////////////////////////////////////////////
         // Main Function                                               //
         /////////////////////////////////////////////////////////////////
@@ -80,13 +94,13 @@
             drawText();
             drawCircle();
             drawSquare();
-            drawCollision();
+            handleCollision();
             drawLine();
             requestAnimationFrame(draw);
         })();
 
         /////////////////////////////////////////////////////////////////
-        // Shape Functions                                             //
+        // Main Drawing Functions                                      //
         /////////////////////////////////////////////////////////////////
 
         // Draw Background
@@ -94,13 +108,9 @@
             drawSquareFunc(0, 0, cvs.width, "black");
         }
 
-        // Draw Square and its center
-        function drawSquare() {
-            // Square
-            drawSquareFunc(sx, sy, ss, "white");
-
-            // Square Center
-            drawCircleFunc(scx, scy, scr, "cyan");
+        // Draw Collision Text
+        function drawText() {
+            drawTextFunc(cvs.width / 2, 100, collText, "50px Sans-Serif");
         }
 
         // Draw Circle and its center
@@ -112,18 +122,22 @@
             drawCircleFunc(ccx, ccy, ccr, "cyan");
         }
 
+        // Draw Square and its center
+        function drawSquare() {
+            // Square
+            drawSquareFunc(sx, sy, ss, "white");
+
+            // Square Center
+            drawCircleFunc(scx, scy, scr, "cyan");
+        }
+
         // Draw Distance Line
         function drawLine() {
             drawLineFunc(ccx, ccy, scx, scy);
         }
 
-        // Draw Collision Text
-        function drawText() {
-            drawTextFunc(cvs.width / 2, 100, collText, "50px Sans-Serif");
-        }
-
         /////////////////////////////////////////////////////////////////
-        // Utility Functions                                           //
+        // Utility Drawing Functions                                   //
         /////////////////////////////////////////////////////////////////
 
         // Draw any square
@@ -166,7 +180,22 @@
         // Logic Functions                                             //
         /////////////////////////////////////////////////////////////////
 
-        function checkCollision() {
+        function mouseMove(e) {
+            const mouseLocation = getLocationWithinCanvas(e.clientX, e.clientX);
+
+            moveSquare(mouseLocation.boundX, mouseLocation.boundY);
+        }
+
+        // Handle collision
+        function handleCollision() {
+            let side = checkCollisionSide();
+            drawCollisionSide(side);
+            updateCollisionText(side);
+            moveCircle(side);
+        }
+
+        // Check which side of the square collides with the circle
+        function checkCollisionSide() {
             var dx = ccx - scx;
             var dy = ccy - scy;
 
@@ -175,14 +204,6 @@
 
             var crossWidth = width * dy;
             var crossHeight = height * dx;
-
-            // Test method calls, to draw collision points
-            // drawSquareFunc(Math.abs(dx), Math.abs(dy), "magenta");
-            // drawSquareFunc(width, height, "yellow");
-            // drawSquareFunc(crossWidth, -crossHeight, "cyan");
-            // console.log("CrossWidth: " + crossWidth);
-            // console.log("CrossHeight: " + crossHeight);
-            // console.log("-CrossHeight: " + -crossHeight);
 
             var collision = 'none';
 
@@ -197,33 +218,101 @@
             return collision;
         }
 
-        // Draw Collision Rectangle
-        function drawCollision() {
-            let side = checkCollision();
-            collText = "Collision: " + side;
-
+        // Draw a rectangle at the side of the collision
+        function drawCollisionSide(side) {
             ctx.fillStyle = "#00f"
             switch (side) {
                 case "left":
                     ctx.fillRect(sx, sy, collSize, ss);
-                    cx = sx - cr
                     break;
                 case "top":
                     ctx.fillRect(sx, sy, ss, collSize);
-                    cy = sy - cr
                     break;
                 case "right":
                     ctx.fillRect(sx + ss - collSize, sy, collSize, ss);
-                    cx = sx + ss + cr;
                     break;
                 case "bottom":
                     ctx.fillRect(sx, sy + ss - collSize, ss, collSize);
+                    break;
+            }
+        }
+
+        // Update text with the side of the collision
+        function updateCollisionText(side) {
+            collText = "Collision: " + side;
+        }
+
+        // Move the Circle when pushed by the Square
+        function moveCircle(side) {
+            switch (side) {
+                case "left":
+                    cx = sx - cr;
+                    break;
+                case "top":
+                    cy = sy - cr;
+                    break;
+                case "right":
+                    cx = sx + ss + cr;
+                    break;
+                case "bottom":
                     cy = sy + ss + cr;
                     break;
             }
+
+            cx = cx.constrainCircleX();
+            cy = cy.constrainCircleY();
+
+            calculateCircleCenter();
+        }
+
+        // Calculate the Circle's center
+        function calculateCircleCenter() {
             ccx = cx;
             ccy = cy;
         }
+
+        function getLocationWithinCanvas(x, y) {
+            // Location of the canvas
+            const rect = cvs.getBoundingClientRect();
+
+            // Get mouse location within canvas
+            return {
+                boundX: x - rect.left,
+                boundY: y - rect.top
+            }
+        }
+
+        function constrainSquare(boundMouseCoOrds) {
+            // Get max possible X and Y for the Square
+            const maxX = cvs.width - ss;
+            const maxY = cvs.height - ss;
+
+            // Get constrained X and Y
+            let constrainedX = (boundMouseCoOrds.boundMouseX - ss / 2).constrain(0, maxX);
+            let constrainedY = (boundMouseCoOrds.boundMouseY - ss / 2).constrain(0, maxY);
+
+            sx = constrainedX;
+            sy = constrainedY;
+        }
+
+        // Move the Square
+        function moveSquare(x, y) {
+            sx = x.constrainSquareX();
+            sy = y.constrainSquareY();
+
+            calculateSquareCenter();
+        }
+
+        // Calculate the Square's center
+        function calculateSquareCenter() {
+            scx = sx + ss / 2;
+            scy = sy + ss / 2;
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // Core Function Extensions                                    //
+        /////////////////////////////////////////////////////////////////
+
 
     </script>
 </body>
